@@ -63,7 +63,7 @@ Main script that:
 1. Clone the repository:
 
 ```bash
-git clone <your-repo-url>
+git clone https://github.com/gama1221/alx-backend-python.git
 cd alx-backend-python
 
 python3 -m venv venv
