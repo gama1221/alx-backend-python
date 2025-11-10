@@ -2,6 +2,11 @@
 """
 Unit tests for the access_nested_map function in the utils module.
 """
+
+import sys
+import os
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+
 import unittest
 from parameterized import parameterized
 from utils import access_nested_map
@@ -27,9 +32,7 @@ class TestAccessNestedMap(unittest.TestCase):
         ({"a": 1}, ("a", "b")),
     ])
     def test_access_nested_map_exception(self, nested_map, path):
-        """
-        Test that a KeyError is raised for missing paths.
-        """
+        """Test that a KeyError is raised for missing paths"""
         with self.assertRaises(KeyError) as error:
             access_nested_map(nested_map, path)
 
