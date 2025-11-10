@@ -12,17 +12,25 @@ class TestAccessNestedMap(unittest.TestCase):
     Test case for the access_nested_map function.
     """
 
-    # Define the inputs for the parameterized tests: (nested_map, path, expected_result)
     @parameterized.expand([
         ({"a": 1}, ("a",), 1),
         ({"a": {"b": 2}}, ("a",), {"b": 2}),
         ({"a": {"b": 2}}, ("a", "b"), 2),
     ])
     def test_access_nested_map(self, nested_map, path, expected_result):
-        """
-        Test that access_nested_map returns the expected result for various inputs.
-        The body should be no longer than 2 lines.
-        """
+        """Test valid paths"""
         result = access_nested_map(nested_map, path)
         self.assertEqual(result, expected_result)
 
+    @parameterized.expand([
+        ({}, ("a",)),
+        ({"a": 1}, ("a", "b")),
+    ])
+    def test_access_nested_map_exception(self, nested_map, path):
+        """
+        Test that a KeyError is raised for missing paths.
+        """
+        with self.assertRaises(KeyError) as error:
+            access_nested_map(nested_map, path)
+
+        self.assertEqual(str(error.exception), repr(path[-1]))
