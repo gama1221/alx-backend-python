@@ -70,3 +70,46 @@ class TestGithubOrgClient(unittest.TestCase):
             mock_get_json.assert_called_once_with(
                 "https://api.github.com/orgs/test-org/repos"
             )
+@parameterized_class([
+    {
+        "org_payload": org_payload,
+        "repos_payload": repos_payload,
+        "expected_repos": expected_repos,
+        "apache2_repos": apache2_repos
+    }
+])
+class TestIntegrationGithubOrgClient(unittest.TestCase):
+    """Integration tests for GithubOrgClient.public_repos."""
+
+    @classmethod
+    def setUpClass(cls):
+        """Set up patchers for requests.get and start them."""
+        cls.get_patcher = patch("client.requests.get")
+        cls.mock_get = cls.get_patcher.start()
+
+        def side_effect(url, *args, **kwargs):
+            mock_response = Mock()
+            if url.endswith("/repos"):
+                mock_response.json.return_value = cls.repos_payload
+            else:
+                mock_response.json.return_value = cls.org_payload
+            return mock_response
+
+        cls.mock_get.side_effect = side_effect
+
+    @classmethod
+    def tearDownClass(cls):
+        """Stop patchers."""
+        cls.get_patcher.stop()
+
+    def test_public_repos(self):
+        """Test that public_repos returns the correct list of repos."""
+        client = GithubOrgClient("apache")
+        result = client.public_repos()
+        self.assertEqual(result, self.expected_repos)
+
+    def test_public_repos_with_license(self):
+        """Test public_repos returns filtered repos by license key."""
+        client = GithubOrgClient("apache")
+        result = client.public_repos(license="apache-2.0")
+        self.assertEqual(result, self.apache2_repos)
