@@ -6,9 +6,10 @@ Unit tests for the client module.
 import sys
 import os
 import unittest
-from parameterized import parameterized
+from parameterized import parameterized, parameterized_class
 from unittest.mock import patch, Mock
 from client import GithubOrgClient
+from fixtures import org_payload, repos_payload, expected_repos, apache2_repos
 
 # If utils or client are in another directory, you may append path here
 # sys.path.append(os.path.dirname(os.path.abspath(__file__)))
@@ -70,6 +71,17 @@ class TestGithubOrgClient(unittest.TestCase):
             mock_get_json.assert_called_once_with(
                 "https://api.github.com/orgs/test-org/repos"
             )
+
+    @parameterized.expand([
+        ({"license": {"key": "my_license"}}, "my_license", True),
+        ({"license": {"key": "other_license"}}, "my_license", False),
+    ])
+    def test_has_license(self, repo, license_key, expected):
+        """Test GithubOrgClient.has_license method."""
+        client = GithubOrgClient("test-org")
+        self.assertEqual(client.has_license(repo, license_key), expected)
+
+
 @parameterized_class([
     {
         "org_payload": org_payload,
@@ -105,11 +117,9 @@ class TestIntegrationGithubOrgClient(unittest.TestCase):
     def test_public_repos(self):
         """Test that public_repos returns the correct list of repos."""
         client = GithubOrgClient("apache")
-        result = client.public_repos()
-        self.assertEqual(result, self.expected_repos)
+        self.assertEqual(client.public_repos(), self.expected_repos)
 
     def test_public_repos_with_license(self):
         """Test public_repos returns filtered repos by license key."""
         client = GithubOrgClient("apache")
-        result = client.public_repos(license="apache-2.0")
-        self.assertEqual(result, self.apache2_repos)
+        self.assertEqual(client.public_repos(license="apache-2.0"), self.apache2_repos)
