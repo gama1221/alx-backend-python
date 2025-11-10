@@ -3,6 +3,8 @@
 Utility functions for ALX backend unit tests.
 """
 
+import requests  # missing import
+
 
 def access_nested_map(nested_map, path):
     """
@@ -25,6 +27,7 @@ def access_nested_map(nested_map, path):
         current = current[key]
     return current
 
+
 def get_json(url):
     """
     Get JSON payload from a URL.
@@ -38,7 +41,13 @@ def get_json(url):
     response = requests.get(url)
     return response.json()
 
+
 def memoize(fn):
+    """
+    Decorator to memoize a property method.
+
+    Caches the result on first access and returns cached value afterwards.
+    """
     attr_name = "_memoized_" + fn.__name__
 
     @property
