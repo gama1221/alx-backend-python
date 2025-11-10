@@ -13,7 +13,7 @@ from client import GithubOrgClient
 # Optional: add current directory to path if client.py is elsewhere
 # sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
-# Sample fixtures (replace these with actual fixture data if imported)
+# Sample fixtures (replace with actual fixture data if imported)
 org_payload = {"login": "apache"}
 repos_payload = [{"name": "repo1"}, {"name": "repo2"}, {"name": "repo3"}]
 expected_repos = ["repo1", "repo2", "repo3"]
@@ -96,23 +96,24 @@ class TestIntegrationGithubOrgClient(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         """Set up patchers for requests.get and start them."""
-        cls.get_patcher = patch("client.requests.get")
-        cls.mock_get = cls.get_patcher.start()
+        cls.instance = cls()  # Needed for self.get_patcher
+        cls.instance.get_patcher = patch("client.requests.get")
+        cls.instance.mock_get = cls.instance.get_patcher.start()
 
         def side_effect(url, *args, **kwargs):
             mock_response = Mock()
             if url.endswith("/repos"):
-                mock_response.json.return_value = cls.repos_payload
+                mock_response.json.return_value = cls.instance.repos_payload
             else:
-                mock_response.json.return_value = cls.org_payload
+                mock_response.json.return_value = cls.instance.org_payload
             return mock_response
 
-        cls.mock_get.side_effect = side_effect
+        cls.instance.mock_get.side_effect = side_effect
 
     @classmethod
     def tearDownClass(cls):
         """Stop patchers."""
-        cls.get_patcher.stop()
+        cls.instance.get_patcher.stop()
 
     def test_public_repos(self):
         """Test that public_repos returns the correct list of repos."""
