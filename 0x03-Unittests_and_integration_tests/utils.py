@@ -24,3 +24,16 @@ def access_nested_map(nested_map, path):
             raise KeyError(key)
         current = current[key]
     return current
+
+def get_json(url):
+    """
+    Get JSON payload from a URL.
+
+    Args:
+        url (str): The URL to fetch.
+
+    Returns:
+        dict: JSON response.
+    """
+    response = requests.get(url)
+    return response.json()
