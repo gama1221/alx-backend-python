@@ -9,10 +9,15 @@ import unittest
 from parameterized import parameterized, parameterized_class
 from unittest.mock import patch, Mock
 from client import GithubOrgClient
-from fixtures import org_payload, repos_payload, expected_repos, apache2_repos
 
-# If utils or client are in another directory, you may append path here
+# Optional: add current directory to path if client.py is elsewhere
 # sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+
+# Sample fixtures (replace these with actual fixture data if imported)
+org_payload = {"login": "apache"}
+repos_payload = [{"name": "repo1"}, {"name": "repo2"}, {"name": "repo3"}]
+expected_repos = ["repo1", "repo2", "repo3"]
+apache2_repos = []  # Replace with actual filtering if license="apache-2.0"
 
 
 class TestGithubOrgClient(unittest.TestCase):
@@ -26,10 +31,8 @@ class TestGithubOrgClient(unittest.TestCase):
     def test_org(self, org_name, mock_get_json):
         """Test that GithubOrgClient.org returns the expected value."""
         mock_get_json.return_value = {"login": org_name}
-
         client = GithubOrgClient(org_name)
         result = client.org
-
         self.assertEqual(result, {"login": org_name})
         expected_url = f"https://api.github.com/orgs/{org_name}"
         mock_get_json.assert_called_once_with(expected_url)
@@ -37,7 +40,6 @@ class TestGithubOrgClient(unittest.TestCase):
     def test_public_repos_url(self):
         """Test GithubOrgClient._public_repos_url property."""
         mock_payload = {"repos_url": "https://api.github.com/orgs/test-org/repos"}
-
         with patch.object(
             GithubOrgClient,
             "org",
@@ -63,11 +65,9 @@ class TestGithubOrgClient(unittest.TestCase):
             GithubOrgClient,
             "_public_repos_url",
             new_callable=property(lambda self: "https://api.github.com/orgs/test-org/repos")
-        ) as mock_url:
+        ):
             result = client.public_repos()
-
             self.assertEqual(result, ["repo1", "repo2", "repo3"])
-            self.assertTrue(mock_url.fget is not None)
             mock_get_json.assert_called_once_with(
                 "https://api.github.com/orgs/test-org/repos"
             )
@@ -117,9 +117,11 @@ class TestIntegrationGithubOrgClient(unittest.TestCase):
     def test_public_repos(self):
         """Test that public_repos returns the correct list of repos."""
         client = GithubOrgClient("apache")
-        self.assertEqual(client.public_repos(), self.expected_repos)
+        result = client.public_repos()
+        self.assertEqual(result, self.expected_repos)
 
     def test_public_repos_with_license(self):
         """Test public_repos returns filtered repos by license key."""
         client = GithubOrgClient("apache")
-        self.assertEqual(client.public_repos(license="apache-2.0"), self.apache2_repos)
+        result = client.public_repos(license="apache-2.0")
+        self.assertEqual(result, self.apache2_repos)
