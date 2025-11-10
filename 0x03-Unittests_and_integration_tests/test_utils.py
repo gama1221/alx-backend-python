@@ -59,5 +59,4 @@ class TestGetJson(unittest.TestCase):
             # Check that requests.get was called once
             mock_get.assert_called_once_with(test_url)
 
-            # Check the returned payload
             self.assertEqual(result, test_payload)
