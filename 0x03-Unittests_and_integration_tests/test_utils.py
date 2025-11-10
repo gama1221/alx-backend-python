@@ -3,14 +3,15 @@
 Unit tests for the utils module.
 """
 
-import sys
-import os
-sys.path.append(os.path.dirname(os.path.abspath(__file__)))
-
 import unittest
 from parameterized import parameterized
 from unittest.mock import patch, Mock
-from utils import access_nested_map, get_json
+import sys
+import os
+
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+
+from utils import access_nested_map, get_json, memoize
 
 
 class TestAccessNestedMap(unittest.TestCase):
@@ -22,6 +23,7 @@ class TestAccessNestedMap(unittest.TestCase):
         ({"a": {"b": 2}}, ("a", "b"), 2),
     ])
     def test_access_nested_map(self, nested_map, path, expected_result):
+        """Test that access_nested_map returns the expected value."""
         result = access_nested_map(nested_map, path)
         self.assertEqual(result, expected_result)
 
@@ -30,6 +32,7 @@ class TestAccessNestedMap(unittest.TestCase):
         ({"a": 1}, ("a", "b")),
     ])
     def test_access_nested_map_exception(self, nested_map, path):
+        """Test that a KeyError is raised for missing keys."""
         with self.assertRaises(KeyError) as error:
             access_nested_map(nested_map, path)
         self.assertEqual(str(error.exception), repr(path[-1]))
@@ -43,6 +46,7 @@ class TestGetJson(unittest.TestCase):
         ("http://holberton.io", {"payload": False}),
     ])
     def test_get_json(self, test_url, test_payload):
+        """Test get_json returns expected payload with mocked requests.get."""
         with patch("utils.requests.get") as mock_get:
             mock_response = Mock()
             mock_response.json.return_value = test_payload
@@ -53,12 +57,12 @@ class TestGetJson(unittest.TestCase):
             mock_get.assert_called_once_with(test_url)
             self.assertEqual(result, test_payload)
 
+
 class TestMemoize(unittest.TestCase):
     """Test the memoize decorator."""
 
     def test_memoize(self):
-        """Test that a_method is called only once when using memoize."""
-
+        """Test that a memoized method caches the result and calls a_method once."""
         class TestClass:
             def a_method(self):
                 return 42
@@ -69,15 +73,10 @@ class TestMemoize(unittest.TestCase):
 
         test_instance = TestClass()
 
-        # Patch a_method
         with patch.object(TestClass, "a_method", return_value=42) as mock_method:
-            # Call the property twice
             result1 = test_instance.a_property
             result2 = test_instance.a_property
 
-            # The value should always be correct
             self.assertEqual(result1, 42)
             self.assertEqual(result2, 42)
-
-            # Ensure a_method was called only once
             mock_method.assert_called_once()
