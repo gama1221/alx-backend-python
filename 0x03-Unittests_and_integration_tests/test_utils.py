@@ -3,12 +3,13 @@
 Unit tests for the utils module.
 """
 
+import sys
+import os
 import unittest
 from parameterized import parameterized
 from unittest.mock import patch, Mock
-import sys
-import os
 
+# Append current directory to sys.path to import utils
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 from utils import access_nested_map, get_json, memoize
@@ -54,7 +55,10 @@ class TestGetJson(unittest.TestCase):
 
             result = get_json(test_url)
 
+            # Ensure get was called exactly once with correct URL
             mock_get.assert_called_once_with(test_url)
+
+            # Ensure result matches expected payload
             self.assertEqual(result, test_payload)
 
 
